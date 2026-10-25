@@ -1,124 +1,80 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# CourseManagementAPI
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Lab Task 02 extends the existing Lab Task 01 project. The project name, course module, controller/service class names, method names, and `/course` routes are preserved.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Run
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Use Node.js 24 (tested with 24.22.1).
 
 ```bash
-$ npm install
+npm ci
+npm run start:dev
 ```
 
-## Compile and run the project
+API base URL: `http://localhost:3000`.
+
+## Test
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run test:lab02
+npm test
+npm run test:e2e
+npm run lint
 ```
 
-## Run tests
+Verified: build and lint pass; 24 integration checks, 3 unit tests, and 1 existing end-to-end test pass. Integration checks exercise the compiled NestJS application through HTTP using Supertest, including validation and disk uploads. Upload fixtures check extension acceptance and byte preservation, not file-content authenticity.
+
+## Postman (required by the lab)
+
+Import `test/CourseManagementAPI.postman_collection.json`. Start the API first. The collection includes response-status assertions. Run the JSON requests and select actual local files in the upload requests' Body > form-data > `file` field. Select JPG/JPEG/PNG/PDF files for success, TXT/EXE files for rejection, and a PDF larger than 2 MB for the size rejection. The collection has been provided for manual Postman testing; Postman's GUI was not run here.
+
+| Method | Route | Expected status |
+| --- | --- | --- |
+| GET | /course | 200 |
+| GET | /course/5 | 200 |
+| POST | /course | 201 |
+| PUT | /course/5 | 200 |
+| PATCH | /course/5 | 200 |
+| DELETE | /course/5 | 200 |
+| POST | /course/5/upload | 201 |
+
+Example POST body:
+
+```json
+{
+  "name": "NestJS Fundamentals",
+  "code": "CS101",
+  "instructor": "John Doe",
+  "credits": 3
+}
+```
+
+`description` is optional. Credits accept numbers or numeric strings and must be between 1 and 6. Required text is trimmed so whitespace-only input is rejected. Unknown JSON properties return 400. PUT and PATCH use UpdateCourseDto with PartialType as explicitly required by the PDF.
+
+## Structure and assignment decisions
+
+- `src/course/dto/create-course.dto.ts`: validation and transformation.
+- `src/course/dto/update-course.dto.ts`: PartialType(CreateCourseDto).
+- `src/course/course.controller.ts`: HTTP routes, DTO bodies, FileInterceptor, diskStorage, extension filter and 2 MB multer limit.
+- `src/course/course.service.ts`: required JSON response objects and missing-file error.
+- `src/course/course.module.ts`: controller/service wiring.
+- `src/course/upload-exception.filter.ts`: converts oversized-upload responses to HTTP 400, as the assignment requires, instead of NestJS's default 413.
+- `src/main.ts`: global ValidationPipe with whitelist, forbidNonWhitelisted and transform.
+- `src/uploads/`: generated at runtime, excluded from Git. The returned upload path points to this actual location, following the PDF's project tree.
+
+The detailed Step 4 JSON examples take precedence over the final architecture note mentioning response strings. GET returns an empty array and create/update/delete return demonstration responses, exactly as specified; this lab does not persist courses. Uploaded materials are saved to disk. Extension validation follows the assignment and does not inspect file signatures.
+
+Faculty reference: https://github.com/Robinak47/awt_fall_26_26_Sec_A (NestJS sample-proj controller injection, DTO decorators, .js ESM imports and FileInterceptor patterns). The lab-specific singular `course` naming and required filenames take precedence over the reference's `users` naming.
+
+## Upload to your GitHub repository
+
+Replace the existing `CourseManagementAPI` folder in your local `AdWebTech-Mid-Lab` checkout with this folder. From the repository root:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git status
+git add CourseManagementAPI
+git commit -m "Complete Lab Task 02 validation and course material uploads"
+git push origin main
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project:
-
-```bash
-$ npm install @nestjs/observe
-```
-
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
-
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Review `git status` before committing. No commit or push was performed during preparation. The unrelated root-level `course/` folder in the original repository was left unchanged.

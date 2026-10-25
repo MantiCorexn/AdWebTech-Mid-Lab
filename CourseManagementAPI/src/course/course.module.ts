@@ -4,6 +4,6 @@ import { CourseService } from './course.service.js';
 
 @Module({
   controllers: [CourseController],
-  providers: [CourseService]
+  providers: [CourseService],
 })
 export class CourseModule {}

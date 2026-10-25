@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "UniversitySystemAPI - Lab Task 03",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get courses",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/course"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Response body\", () => pm.expect(pm.response.json()).to.deep.equal({\"message\": \"All courses fetched\", \"data\": []}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get course",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/course/101"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Response body\", () => pm.expect(pm.response.json()).to.deep.equal({\"message\": \"Course fetched\", \"id\": \"101\"}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create course",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/course",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"NestJS\",\n  \"code\": \"CS301\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Response body\", () => pm.expect(pm.response.json()).to.deep.equal({\"message\": \"Course created\", \"data\": {\"name\": \"NestJS\", \"code\": \"CS301\"}}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get enrollments",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/enrollment"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Response body\", () => pm.expect(pm.response.json()).to.deep.equal({\"message\": \"All enrollments fetched\", \"data\": []}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enroll student",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/enrollment",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"studentName\": \"John Doe\",\n  \"courseId\": \"101\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Course and notification included\", () => { const b = pm.response.json(); pm.expect(b.course.id).to.equal(\"101\"); pm.expect(b.notification.message).to.equal(\"Notification sent successfully\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Send notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/notification/send",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"studentName\": \"John Doe\",\n  \"message\": \"Welcome!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Response body\", () => pm.expect(pm.response.json()).to.deep.equal({\"message\": \"Notification sent successfully\", \"student\": \"John Doe\", \"notification\": \"Welcome!\"}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Check enrollment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/notification/check",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"studentName\": \"John Doe\",\n  \"courseId\": \"101\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Enrollment service called\", () => pm.expect(pm.response.json().enrollments).to.deep.equal({message:\"All enrollments fetched\",data:[]}));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
